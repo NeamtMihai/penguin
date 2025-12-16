@@ -69,6 +69,36 @@ for (let i = 0; i < 50; i++) {
 }
 
 // --------------------
+// Trees (simple low-poly)
+// --------------------
+const trunkGeo = new THREE.CylinderGeometry(0.2, 0.3, 2);
+const trunkMat = new THREE.MeshStandardMaterial({ color: 0x8b5a2b });
+
+const leavesGeo = new THREE.ConeGeometry(1.2, 2.5, 8);
+const leavesMat = new THREE.MeshStandardMaterial({ color: 0x2e8b57 });
+
+for (let i = 0; i < 25; i++) {
+  const tree = new THREE.Group();
+
+  const trunk = new THREE.Mesh(trunkGeo, trunkMat);
+  trunk.position.y = 1;
+  tree.add(trunk);
+
+  const leaves = new THREE.Mesh(leavesGeo, leavesMat);
+  leaves.position.y = 3;
+  tree.add(leaves);
+
+  tree.position.set(
+    (Math.random() - 0.5) * 80,
+    0,
+    (Math.random() - 0.5) * 80
+  );
+
+  scene.add(tree);
+}
+
+
+// --------------------
 // Input (keyboard)
 // --------------------
 const keys = {};

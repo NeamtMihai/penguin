@@ -96,12 +96,22 @@ window.addEventListener('mousemove', e => {
 });
 
 // --------------------
+// Helpers
+// --------------------
+function lerp(a, b, t) {
+  return a + (b - a) * t;
+}
+
+// --------------------
 // Game Loop
 // --------------------
+const cameraTarget = new THREE.Vector3();
+
 function animate() {
   requestAnimationFrame(animate);
 
   const speed = 0.12;
+  let moving = false;
 
   // Camera-relative movement vectors
   const forward = new THREE.Vector3(
@@ -116,21 +126,34 @@ function animate() {
     Math.cos(yaw + Math.PI / 2)
   );
 
-  if (keys['w']) player.position.addScaledVector(forward, -speed);
-  if (keys['s']) player.position.addScaledVector(forward, speed);
-  if (keys['a']) player.position.addScaledVector(right, -speed);
-  if (keys['d']) player.position.addScaledVector(right, speed);
+  const moveDir = new THREE.Vector3();
 
-  // Camera follow
+  if (keys['w']) { moveDir.add(forward).multiplyScalar(-1); moving = true; }
+  if (keys['s']) { moveDir.add(forward); moving = true; }
+  if (keys['a']) { moveDir.add(right).multiplyScalar(-1); moving = true; }
+  if (keys['d']) { moveDir.add(right); moving = true; }
+
+  if (moveDir.length() > 0) {
+    moveDir.normalize();
+    player.position.addScaledVector(moveDir, speed);
+
+    // A) Rotate player toward movement direction
+    const targetRotation = Math.atan2(moveDir.x, moveDir.z);
+    player.rotation.y = lerp(player.rotation.y, targetRotation, 0.15);
+  }
+
+  // B) Smooth camera follow
   const distance = 8;
-  const cameraOffset = new THREE.Vector3(
+  const desiredCameraPos = new THREE.Vector3(
     Math.sin(yaw) * distance,
     4 + pitch * 4,
     Math.cos(yaw) * distance
-  );
+  ).add(player.position);
 
-  camera.position.copy(player.position).add(cameraOffset);
-  camera.lookAt(player.position);
+  camera.position.lerp(desiredCameraPos, 0.1);
+
+  cameraTarget.copy(player.position);
+  camera.lookAt(cameraTarget);
 
   renderer.render(scene, camera);
 }

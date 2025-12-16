@@ -94,6 +94,15 @@
         .color-dot[data-color="#ff00ff"] {
             background: #ff00ff;
         }
+
+        #env-toggle {
+            margin-right: 10px;
+            height: 36px;
+            padding: 0 12px;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+        }
     </style>
 </head>
 
@@ -105,6 +114,8 @@
 
     <!-- UI BAR -->
     <div id="ui-bar">
+        <button id="env-toggle">Beach 🌴</button>
+
         <div id="color-picker">
             <div class="color-dot" data-color="#0000ff"></div>
             <div class="color-dot" data-color="#ff0000"></div>
@@ -119,4 +130,5 @@
 
     <script type="module" src="main.js"></script>
 </body>
+
 </html>

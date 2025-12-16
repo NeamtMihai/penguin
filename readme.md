@@ -16,3 +16,10 @@ BIG TO DO:
         user management
         how to build the wordl around the player
         how to display other players
+
+
+
+
+World
+ ├─ Environment (forest / beach)
+ └─ Event (Halloween / none)

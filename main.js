@@ -57,6 +57,7 @@ scene.add(player);
 // --------------------
 // Objects on ground
 // --------------------
+const boxes = []
 const boxGeo = new THREE.BoxGeometry(1, 1, 1);
 const boxMat = new THREE.MeshStandardMaterial({ color: 0x8b4513 });
 
@@ -67,6 +68,7 @@ for (let i = 0; i < 50; i++) {
         0.5,
         (Math.random() - 0.5) * 80
     );
+    boxes.push(box);
     scene.add(box);
 }
 
@@ -78,6 +80,7 @@ const trunkMat = new THREE.MeshStandardMaterial({ color: 0x8b5a2b });
 
 const leavesGeo = new THREE.ConeGeometry(1.2, 2.5, 8);
 const leavesMat = new THREE.MeshStandardMaterial({ color: 0x2e8b57 });
+const trees = [];
 
 for (let i = 0; i < 25; i++) {
     const tree = new THREE.Group();
@@ -101,9 +104,63 @@ for (let i = 0; i < 25; i++) {
     tree.scale.set(scale, scale, scale);
 
 
+    trees.push(tree);
     scene.add(tree);
+
 }
 
+// --------------------
+// Beach elements (initially hidden)
+// --------------------
+const sandMaterial = new THREE.MeshStandardMaterial({ color: 0xf2d16b });
+const grassMaterial = ground.material;
+
+const water = new THREE.Mesh(
+    new THREE.PlaneGeometry(50, 50),
+    new THREE.MeshStandardMaterial({
+        color: 0x4fc3f7,
+        transparent: true,
+        opacity: 0.8
+    })
+);
+water.rotation.x = -Math.PI / 2;
+water.position.set(25, 0.03, 25);
+water.visible = false;
+scene.add(water);
+
+
+// --------------------
+// Environment toggle
+// --------------------
+let isBeach = false;
+const envBtn = document.getElementById('env-toggle');
+
+envBtn.addEventListener('click', () => {
+    isBeach = !isBeach;
+
+    if (isBeach) {
+        // BEACH 🌴
+        ground.material = sandMaterial;
+        scene.background.set(0x87cefa);
+        scene.fog.color.set(0x87cefa);
+
+        trees.forEach(t => t.visible = false);
+        boxes.forEach(b => b.visible = false);
+        water.visible = true;
+
+        envBtn.textContent = 'Forest 🌲';
+    } else {
+        // FOREST 🌲
+        ground.material = grassMaterial;
+        scene.background.set(0x87ceeb);
+        scene.fog.color.set(0x87ceeb);
+
+        trees.forEach(t => t.visible = true);
+        water.visible = false;
+
+        envBtn.textContent = 'Beach 🌴';
+    }
+});
 
 // --------------------
 // Input (keyboard)

@@ -5,6 +5,8 @@ import * as THREE from 'https://unpkg.com/three@0.158.0/build/three.module.js';
 // --------------------
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x87ceeb);
+scene.fog = new THREE.Fog(0x87ceeb, 20, 80);
+
 
 // --------------------
 // Camera
@@ -78,23 +80,28 @@ const leavesGeo = new THREE.ConeGeometry(1.2, 2.5, 8);
 const leavesMat = new THREE.MeshStandardMaterial({ color: 0x2e8b57 });
 
 for (let i = 0; i < 25; i++) {
-  const tree = new THREE.Group();
+    const tree = new THREE.Group();
 
-  const trunk = new THREE.Mesh(trunkGeo, trunkMat);
-  trunk.position.y = 1;
-  tree.add(trunk);
+    const trunk = new THREE.Mesh(trunkGeo, trunkMat);
+    trunk.position.y = 1;
+    tree.add(trunk);
 
-  const leaves = new THREE.Mesh(leavesGeo, leavesMat);
-  leaves.position.y = 3;
-  tree.add(leaves);
+    const leaves = new THREE.Mesh(leavesGeo, leavesMat);
+    leaves.position.y = 3;
+    tree.add(leaves);
 
-  tree.position.set(
-    (Math.random() - 0.5) * 80,
-    0,
-    (Math.random() - 0.5) * 80
-  );
+    tree.position.set(
+        (Math.random() - 0.5) * 80,
+        0,
+        (Math.random() - 0.5) * 80
+    );
 
-  scene.add(tree);
+    // 🔹 NEW: vary tree size
+    const scale = 0.7 + Math.random() * 1.8;
+    tree.scale.set(scale, scale, scale);
+
+
+    scene.add(tree);
 }
 
 

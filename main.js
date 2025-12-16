@@ -163,6 +163,70 @@ envBtn.addEventListener('click', () => {
 });
 
 // --------------------
+// Halloween pumpkins
+// --------------------
+const pumpkins = [];
+
+const pumpkinGeo = new THREE.SphereGeometry(0.6, 12, 12);
+const pumpkinMat = new THREE.MeshStandardMaterial({ color: 0xff7a00 });
+
+for (let i = 0; i < 15; i++) {
+    const pumpkin = new THREE.Mesh(pumpkinGeo, pumpkinMat);
+    pumpkin.position.set(
+        (Math.random() - 0.5) * 80,
+        0.6,
+        (Math.random() - 0.5) * 80
+    );
+    pumpkin.visible = false;
+    pumpkins.push(pumpkin);
+    scene.add(pumpkin);
+}
+
+// --------------------
+// Halloween event toggle
+// --------------------
+let isHalloween = false;
+const eventBtn = document.getElementById('event-toggle');
+
+const normalFogColor = scene.fog.color.clone();
+const normalLightIntensity = dirLight.intensity;
+
+eventBtn.addEventListener('click', () => {
+    isHalloween = !isHalloween;
+
+    if (isHalloween) {
+        // 🎃 HALLOWEEN ON
+        scene.background.set(0x2b1b3a);
+        scene.fog.color.set(0x2b1b3a);
+
+        dirLight.intensity = 0.6;
+
+        trees.forEach(t => {
+            t.children[1].material.color.set(0x4b2e83); // spooky leaves
+        });
+
+        pumpkins.forEach(p => p.visible = true);
+
+        eventBtn.textContent = 'Halloween 🎃 (ON)';
+    } else {
+        // 🎃 HALLOWEEN OFF
+        scene.background.copy(normalFogColor);
+        scene.fog.color.copy(normalFogColor);
+
+        dirLight.intensity = normalLightIntensity;
+
+        trees.forEach(t => {
+            t.children[1].material.color.set(0x2e8b57); // normal leaves
+        });
+
+        pumpkins.forEach(p => p.visible = false);
+
+        eventBtn.textContent = 'Halloween 🎃';
+    }
+});
+
+
+// --------------------
 // Input (keyboard)
 // --------------------
 const keys = {};

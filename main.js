@@ -125,8 +125,13 @@ marker.rotation.x = -Math.PI / 2;
 marker.visible = false;
 scene.add(marker);
 
+const uiBar = document.getElementById('ui-bar');
+
 window.addEventListener('mousedown', e => {
   if (e.button !== 0) return;
+
+  // 🔹 NEW: ignore clicks on UI bar
+  if (uiBar && uiBar.contains(e.target)) return;
 
   mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
   mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
@@ -286,4 +291,14 @@ window.addEventListener('resize', () => {
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth, window.innerHeight);
+});
+
+// --------------------
+// Player color controls (UI)
+// --------------------
+document.querySelectorAll('.color-dot').forEach(dot => {
+  dot.addEventListener('click', () => {
+    const color = dot.dataset.color;
+    player.material.color.set(color);
+  });
 });

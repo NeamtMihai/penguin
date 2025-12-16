@@ -1,6 +1,6 @@
  npx serve
  bugs:
-    w+a moves back
+    w+a moves back DONE
 
 TO DO:
 

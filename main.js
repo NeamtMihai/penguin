@@ -69,16 +69,32 @@ for (let i = 0; i < 50; i++) {
 }
 
 // --------------------
-// Input
+// Input (keyboard)
 // --------------------
 const keys = {};
 window.addEventListener('keydown', e => keys[e.key.toLowerCase()] = true);
 window.addEventListener('keyup', e => keys[e.key.toLowerCase()] = false);
 
+// --------------------
 // Mouse camera
+// --------------------
 let mouseDown = false;
 let yaw = 0;
 let pitch = 0;
+
+// Zoom
+let cameraDistance = 8;
+let targetCameraDistance = 8;
+const MIN_DISTANCE = 3;
+const MAX_DISTANCE = 15;
+
+window.addEventListener('wheel', e => {
+  targetCameraDistance += e.deltaY * 0.01;
+  targetCameraDistance = Math.max(
+    MIN_DISTANCE,
+    Math.min(MAX_DISTANCE, targetCameraDistance)
+  );
+});
 
 window.addEventListener('mousedown', e => {
   if (e.button === 2) mouseDown = true;
@@ -101,7 +117,6 @@ const raycaster = new THREE.Raycaster();
 const mouse = new THREE.Vector2();
 let clickTarget = null;
 
-// Marker
 const marker = new THREE.Mesh(
   new THREE.RingGeometry(0.3, 0.5, 32),
   new THREE.MeshBasicMaterial({ color: 0x00ff00 })
@@ -159,22 +174,19 @@ function animate() {
     Math.cos(yaw + Math.PI / 2)
   );
 
-  // --------------------
-  // WASD movement (cancels click-to-move)
-  // --------------------
+  // Cancel click-to-move on WASD
   if (keys['w'] || keys['a'] || keys['s'] || keys['d']) {
     clickTarget = null;
     marker.visible = false;
   }
 
+  // WASD movement
   if (keys['w']) { moveDir.add(forward).multiplyScalar(-1); moving = true; }
   if (keys['s']) { moveDir.add(forward); moving = true; }
   if (keys['a']) { moveDir.add(right).multiplyScalar(-1); moving = true; }
   if (keys['d']) { moveDir.add(right); moving = true; }
 
-  // --------------------
   // Click-to-move
-  // --------------------
   if (!moving && clickTarget) {
     const toTarget = clickTarget.clone().sub(player.position);
     toTarget.y = 0;
@@ -195,12 +207,14 @@ function animate() {
     player.rotation.y = lerp(player.rotation.y, targetRot, 0.15);
   }
 
+  // Smooth zoom
+  cameraDistance = lerp(cameraDistance, targetCameraDistance, 0.1);
+
   // Smooth camera follow
-  const distance = 8;
   const desiredCameraPos = new THREE.Vector3(
-    Math.sin(yaw) * distance,
+    Math.sin(yaw) * cameraDistance,
     4 + pitch * 4,
-    Math.cos(yaw) * distance
+    Math.cos(yaw) * cameraDistance
   ).add(player.position);
 
   camera.position.lerp(desiredCameraPos, 0.1);

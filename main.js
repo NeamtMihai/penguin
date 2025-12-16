@@ -91,8 +91,40 @@ window.addEventListener('mousemove', e => {
 
   yaw -= e.movementX * 0.002;
   pitch -= e.movementY * 0.002;
-
   pitch = Math.max(-1.2, Math.min(0.3, pitch));
+});
+
+// --------------------
+// Click-to-move + Marker
+// --------------------
+const raycaster = new THREE.Raycaster();
+const mouse = new THREE.Vector2();
+let clickTarget = null;
+
+// Marker
+const marker = new THREE.Mesh(
+  new THREE.RingGeometry(0.3, 0.5, 32),
+  new THREE.MeshBasicMaterial({ color: 0x00ff00 })
+);
+marker.rotation.x = -Math.PI / 2;
+marker.visible = false;
+scene.add(marker);
+
+window.addEventListener('mousedown', e => {
+  if (e.button !== 0) return;
+
+  mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+  mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+
+  raycaster.setFromCamera(mouse, camera);
+  const hits = raycaster.intersectObject(ground);
+
+  if (hits.length > 0) {
+    clickTarget = hits[0].point.clone();
+    marker.position.copy(clickTarget);
+    marker.position.y = 0.05;
+    marker.visible = true;
+  }
 });
 
 // --------------------
@@ -112,8 +144,9 @@ function animate() {
 
   const speed = 0.12;
   let moving = false;
+  const moveDir = new THREE.Vector3();
 
-  // Camera-relative movement vectors
+  // Camera-relative directions
   const forward = new THREE.Vector3(
     Math.sin(yaw),
     0,
@@ -126,23 +159,43 @@ function animate() {
     Math.cos(yaw + Math.PI / 2)
   );
 
-  const moveDir = new THREE.Vector3();
+  // --------------------
+  // WASD movement (cancels click-to-move)
+  // --------------------
+  if (keys['w'] || keys['a'] || keys['s'] || keys['d']) {
+    clickTarget = null;
+    marker.visible = false;
+  }
 
   if (keys['w']) { moveDir.add(forward).multiplyScalar(-1); moving = true; }
   if (keys['s']) { moveDir.add(forward); moving = true; }
   if (keys['a']) { moveDir.add(right).multiplyScalar(-1); moving = true; }
   if (keys['d']) { moveDir.add(right); moving = true; }
 
-  if (moveDir.length() > 0) {
-    moveDir.normalize();
-    player.position.addScaledVector(moveDir, speed);
+  // --------------------
+  // Click-to-move
+  // --------------------
+  if (!moving && clickTarget) {
+    const toTarget = clickTarget.clone().sub(player.position);
+    toTarget.y = 0;
 
-    // A) Rotate player toward movement direction
-    const targetRotation = Math.atan2(moveDir.x, moveDir.z);
-    player.rotation.y = lerp(player.rotation.y, targetRotation, 0.15);
+    if (toTarget.length() > 0.2) {
+      moveDir.copy(toTarget.normalize());
+      moving = true;
+    } else {
+      clickTarget = null;
+      marker.visible = false;
+    }
   }
 
-  // B) Smooth camera follow
+  // Apply movement + rotation
+  if (moving) {
+    player.position.addScaledVector(moveDir, speed);
+    const targetRot = Math.atan2(moveDir.x, moveDir.z);
+    player.rotation.y = lerp(player.rotation.y, targetRot, 0.15);
+  }
+
+  // Smooth camera follow
   const distance = 8;
   const desiredCameraPos = new THREE.Vector3(
     Math.sin(yaw) * distance,
@@ -151,7 +204,6 @@ function animate() {
   ).add(player.position);
 
   camera.position.lerp(desiredCameraPos, 0.1);
-
   cameraTarget.copy(player.position);
   camera.lookAt(cameraTarget);
 

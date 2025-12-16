@@ -78,9 +78,9 @@ window.addEventListener('keyup', e => keys[e.key.toLowerCase()] = false);
 // --------------------
 // Mouse camera
 // --------------------
-let mouseDown = false;
 let yaw = 0;
 let pitch = 0;
+let mouseDown = false;
 
 // Zoom
 let cameraDistance = 8;
@@ -142,6 +142,57 @@ window.addEventListener('mousedown', e => {
   }
 });
 
+/* =====================
+   CHAT SYSTEM
+===================== */
+
+const bubbleContainer = document.getElementById('chat-bubbles');
+let bubble = null;
+let bubbleTimer = 0;
+
+function showBubble(text) {
+  if (bubble) bubble.remove();
+  bubble = document.createElement('div');
+  bubble.className = 'chat-bubble';
+  bubble.innerText = text;
+  bubbleContainer.appendChild(bubble);
+  bubbleTimer = 4;
+}
+
+const input = document.getElementById('chat-input');
+const sendBtn = document.getElementById('send-btn');
+
+/* 🔹 NEW: chat focus tracking */
+let chatFocused = false;
+
+input.addEventListener('focus', () => {
+  chatFocused = true;
+});
+
+input.addEventListener('blur', () => {
+  chatFocused = false;
+});
+
+/* 🔹 NEW: Enter focuses chat if not already typing */
+window.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !chatFocused) {
+    input.focus();
+    e.preventDefault();
+  }
+});
+
+function sendMessage() {
+  const text = input.value.trim();
+  if (!text) return;
+  showBubble(text);
+  input.value = '';
+}
+
+sendBtn.onclick = sendMessage;
+input.addEventListener('keydown', e => {
+  if (e.key === 'Enter') sendMessage();
+});
+
 // --------------------
 // Helpers
 // --------------------
@@ -150,41 +201,31 @@ function lerp(a, b, t) {
 }
 
 // --------------------
-// Game Loop
+// Game loop
 // --------------------
-const cameraTarget = new THREE.Vector3();
-
 function animate() {
   requestAnimationFrame(animate);
 
   const speed = 0.12;
-  let moving = false;
   const moveDir = new THREE.Vector3();
+  let moving = false;
 
-  // Camera-relative directions
-  const forward = new THREE.Vector3(
-    Math.sin(yaw),
-    0,
-    Math.cos(yaw)
-  );
+  const forward = new THREE.Vector3(Math.sin(yaw), 0, Math.cos(yaw));
+  const right = new THREE.Vector3(Math.sin(yaw + Math.PI / 2), 0, Math.cos(yaw + Math.PI / 2));
 
-  const right = new THREE.Vector3(
-    Math.sin(yaw + Math.PI / 2),
-    0,
-    Math.cos(yaw + Math.PI / 2)
-  );
-
-  // Cancel click-to-move on WASD
-  if (keys['w'] || keys['a'] || keys['s'] || keys['d']) {
+  // 🔹 UPDATED: cancel click-to-move only if NOT typing
+  if (!chatFocused && (keys['w'] || keys['a'] || keys['s'] || keys['d'])) {
     clickTarget = null;
     marker.visible = false;
   }
 
-  // WASD movement
-  if (keys['w']) { moveDir.add(forward).multiplyScalar(-1); moving = true; }
-  if (keys['s']) { moveDir.add(forward); moving = true; }
-  if (keys['a']) { moveDir.add(right).multiplyScalar(-1); moving = true; }
-  if (keys['d']) { moveDir.add(right); moving = true; }
+  // 🔹 UPDATED: WASD movement only if NOT typing
+  if (!chatFocused) {
+    if (keys['w']) { moveDir.add(forward).multiplyScalar(-1); moving = true; }
+    if (keys['s']) { moveDir.add(forward); moving = true; }
+    if (keys['a']) { moveDir.add(right).multiplyScalar(-1); moving = true; }
+    if (keys['d']) { moveDir.add(right); moving = true; }
+  }
 
   // Click-to-move
   if (!moving && clickTarget) {
@@ -203,23 +244,35 @@ function animate() {
   // Apply movement + rotation
   if (moving) {
     player.position.addScaledVector(moveDir, speed);
-    const targetRot = Math.atan2(moveDir.x, moveDir.z);
-    player.rotation.y = lerp(player.rotation.y, targetRot, 0.15);
+    player.rotation.y = lerp(player.rotation.y, Math.atan2(moveDir.x, moveDir.z), 0.15);
   }
 
   // Smooth zoom
   cameraDistance = lerp(cameraDistance, targetCameraDistance, 0.1);
 
-  // Smooth camera follow
-  const desiredCameraPos = new THREE.Vector3(
+  const camPos = new THREE.Vector3(
     Math.sin(yaw) * cameraDistance,
     4 + pitch * 4,
     Math.cos(yaw) * cameraDistance
   ).add(player.position);
 
-  camera.position.lerp(desiredCameraPos, 0.1);
-  cameraTarget.copy(player.position);
-  camera.lookAt(cameraTarget);
+  camera.position.lerp(camPos, 0.1);
+  camera.lookAt(player.position);
+
+  // Bubble follow
+  if (bubble) {
+    bubbleTimer -= 1 / 60;
+    if (bubbleTimer <= 0) {
+      bubble.remove();
+      bubble = null;
+    } else {
+      const head = player.position.clone();
+      head.y += 2.5;
+      head.project(camera);
+      bubble.style.left = `${(head.x * 0.5 + 0.5) * window.innerWidth}px`;
+      bubble.style.top = `${(-head.y * 0.5 + 0.5) * window.innerHeight}px`;
+    }
+  }
 
   renderer.render(scene, camera);
 }

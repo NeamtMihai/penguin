@@ -172,6 +172,20 @@ const pumpkinMat = new THREE.MeshStandardMaterial({ color: 0xff7a00 });
 
 for (let i = 0; i < 15; i++) {
     const pumpkin = new THREE.Mesh(pumpkinGeo, pumpkinMat);
+
+    // 🎃 glowing face
+    const face = new THREE.Mesh(
+        new THREE.CircleGeometry(0.25, 12),
+        new THREE.MeshBasicMaterial({
+            color: 0xffcc66,
+            transparent: true,
+            opacity: 0.8
+        })
+    );
+    face.position.z = 0.55;
+    face.position.y = 0.1;
+    pumpkin.add(face);
+
     pumpkin.position.set(
         (Math.random() - 0.5) * 80,
         0.6,

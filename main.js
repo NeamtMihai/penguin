@@ -113,6 +113,7 @@ for (let i = 0; i < 25; i++) {
 // Beach elements (initially hidden)
 // --------------------
 const sandMaterial = new THREE.MeshStandardMaterial({ color: 0xf2d16b });
+const snowMaterial = new THREE.MeshStandardMaterial({ color: 0xffffff });
 const grassMaterial = ground.material;
 
 const water = new THREE.Mesh(
@@ -197,6 +198,96 @@ for (let i = 0; i < 15; i++) {
 }
 
 // --------------------
+// Christmas snowmen (improved)
+// --------------------
+const snowmen = [];
+
+const snowMat = new THREE.MeshStandardMaterial({ color: 0xffffff });
+const coalMat = new THREE.MeshStandardMaterial({ color: 0x222222 });
+const carrotMat = new THREE.MeshStandardMaterial({ color: 0xff7a00 });
+const stickMat = new THREE.MeshStandardMaterial({ color: 0x6b4f2a });
+
+for (let i = 0; i < 10; i++) {
+    const snowman = new THREE.Group();
+
+    // Body (bottom → top)
+    const bottom = new THREE.Mesh(new THREE.SphereGeometry(0.8, 16, 16), snowMat);
+    bottom.position.y = 0.8;
+    snowman.add(bottom);
+
+    const middle = new THREE.Mesh(new THREE.SphereGeometry(0.55, 16, 16), snowMat);
+    middle.position.y = 1.7;
+    snowman.add(middle);
+
+    const head = new THREE.Mesh(new THREE.SphereGeometry(0.4, 16, 16), snowMat);
+    head.position.y = 2.45;
+    snowman.add(head);
+
+    // Eyes (coal)
+    const eyeGeo = new THREE.SphereGeometry(0.05, 8, 8);
+    const leftEye = new THREE.Mesh(eyeGeo, coalMat);
+    const rightEye = new THREE.Mesh(eyeGeo, coalMat);
+
+    leftEye.position.set(-0.12, 2.5, 0.35);
+    rightEye.position.set(0.12, 2.5, 0.35);
+
+    snowman.add(leftEye, rightEye);
+
+    // Nose (carrot)
+    const nose = new THREE.Mesh(
+        new THREE.ConeGeometry(0.06, 0.4, 8),
+        carrotMat
+    );
+    nose.position.set(0, 2.4, 0.45);
+    nose.rotation.x = Math.PI / 2;
+    snowman.add(nose);
+
+    // Buttons
+    for (let b = 0; b < 3; b++) {
+        const button = new THREE.Mesh(
+            new THREE.SphereGeometry(0.05, 8, 8),
+            coalMat
+        );
+        button.position.set(0, 1.7 - b * 0.25, 0.55);
+        snowman.add(button);
+    }
+
+    // Arms (sticks)
+    const armGeo = new THREE.CylinderGeometry(0.03, 0.04, 1.2, 6);
+
+    const leftArm = new THREE.Mesh(armGeo, stickMat);
+    leftArm.position.set(-0.9, 1.8, 0);
+    leftArm.rotation.z = Math.PI / 4;
+    snowman.add(leftArm);
+
+    const rightArm = new THREE.Mesh(armGeo, stickMat);
+    rightArm.position.set(0.9, 1.8, 0);
+    rightArm.rotation.z = -Math.PI / 4;
+    snowman.add(rightArm);
+
+    // Placement + variation
+    snowman.position.set(
+        (Math.random() - 0.5) * 80,
+        0,
+        (Math.random() - 0.5) * 80
+    );
+
+    snowman.rotation.y = Math.random() * Math.PI * 2;
+    snowman.scale.setScalar(0.9 + Math.random() * 0.3);
+
+    snowman.visible = false;
+    snowmen.push(snowman);
+    scene.add(snowman);
+}
+// --------------------
+// Christmas festive light
+// --------------------
+const christmasLight = new THREE.PointLight(0xffffff, 0, 20);
+christmasLight.position.set(0, 6, 0);
+scene.add(christmasLight);
+
+
+// --------------------
 // Halloween event toggle
 // --------------------
 let isHalloween = false;
@@ -236,6 +327,56 @@ eventBtn.addEventListener('click', () => {
         pumpkins.forEach(p => p.visible = false);
 
         eventBtn.textContent = 'Halloween 🎃';
+    }
+});
+// --------------------
+// Christmas event toggle
+// --------------------
+let isChristmas = false;
+const christmasBtn = document.getElementById('christmas-toggle');
+
+const christmasFogColor = new THREE.Color(0xe0f6ff);
+
+christmasBtn.addEventListener('click', () => {
+    isChristmas = !isChristmas;
+
+    // ❗ Turn off Halloween if active
+    if (isChristmas && isHalloween) {
+        eventBtn.click();
+    }
+
+    if (isChristmas) {
+        // 🎄 CHRISTMAS ON
+        scene.background.copy(christmasFogColor);
+        scene.fog.color.copy(christmasFogColor);
+        ground.material = snowMaterial;
+
+        dirLight.intensity = 0.9;
+        christmasLight.intensity = 0.6;
+
+        // Snowy trees
+        trees.forEach(t => {
+            t.children[1].material.color.set(0xffffff);
+        });
+
+        snowmen.forEach(s => s.visible = true);
+
+        christmasBtn.textContent = 'Christmas 🎄 (ON)';
+    } else {
+        // 🎄 CHRISTMAS OFF
+        scene.background.set(0x87ceeb);
+        scene.fog.color.set(0x87ceeb);
+
+        christmasLight.intensity = 0;
+
+        trees.forEach(t => {
+            t.children[1].material.color.set(0x2e8b57);
+        });
+
+
+        snowmen.forEach(s => s.visible = false);
+
+        christmasBtn.textContent = 'Christmas 🎄';
     }
 });
 

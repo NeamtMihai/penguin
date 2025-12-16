@@ -1,8 +1,11 @@
  npx serve
  bugs:
     w+a moves back DONE
+    when moving to another room on halloween, sky is not ok
+    christmass ground remain on toggle off
 
 TO DO:
+    better state management
 
 BIG TO DO:
     player customization

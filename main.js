@@ -97,7 +97,7 @@ for (let i = 0; i < 25; i++) {
     );
 
     // 🔹 NEW: vary tree size
-    const scale = 0.7 + Math.random() * 1.8;
+    const scale = 0.7 + Math.random() * 2.8;
     tree.scale.set(scale, scale, scale);
 
 

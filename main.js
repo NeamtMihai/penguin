@@ -474,7 +474,7 @@ function showBubble(text) {
     bubble.className = 'chat-bubble';
     bubble.innerText = text;
     bubbleContainer.appendChild(bubble);
-    bubbleTimer = 4;
+    bubbleTimer = 20;
 }
 
 const input = document.getElementById('chat-input');

@@ -9,7 +9,10 @@ TO DO:
 
 BIG TO DO:
     player customization
+        hats
+        colors DONE
     chat
+        make online
     log in 
     messeges
     friend system
@@ -26,3 +29,20 @@ BIG TO DO:
 World
  ├─ Environment (forest / beach)
  └─ Event (Halloween / none)
+
+
+10️⃣ Recommended “slow path” (no overwhelm)
+
+✅ Add login/register UI
+
+✅ Create profiles table
+
+✅ On login → create profile row
+
+✅ Store color + position
+
+✅ Subscribe to other players
+
+✅ Render simple cubes as players
+
+🎉 You now have multiplayer

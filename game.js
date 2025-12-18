@@ -110,9 +110,18 @@ export async function startGame(user) {
         )
         .subscribe();
 
-
-
-
+    // 🐧 CHAT ADD
+    supabase
+        .channel('chat')
+        .on(
+            'postgres_changes',
+            { event: 'INSERT', schema: 'public', table: 'messages' },
+            payload => {
+                const msg = payload.new;
+                showMessageBubble(msg);
+            }
+        )
+        .subscribe();
 
     // --------------------
     // Camera
@@ -573,6 +582,47 @@ export async function startGame(user) {
         bubbleContainer.appendChild(bubble);
         bubbleTimer = 20;
     }
+    // 🐧 CHAT ADD
+    function showMessageBubble(msg) {
+        let targetMesh;
+
+        if (msg.user_id === user.id) {
+            targetMesh = player;
+        } else {
+            targetMesh = otherPlayers.get(msg.user_id);
+        }
+
+        if (!targetMesh) return;
+
+        const bubble = document.createElement('div');
+        bubble.className = 'chat-bubble';
+        bubble.innerText = msg.text;
+        bubbleContainer.appendChild(bubble);
+
+        let timer = 3;
+
+        function updateBubble() {
+            timer -= 1 / 60;
+            if (timer <= 0) {
+                bubble.remove();
+                return;
+            }
+
+            const head = targetMesh.position.clone();
+            head.y += 2.5;
+            head.project(camera);
+
+            bubble.style.left =
+                `${(head.x * 0.5 + 0.5) * window.innerWidth}px`;
+            bubble.style.top =
+                `${(-head.y * 0.5 + 0.5) * window.innerHeight}px`;
+
+            requestAnimationFrame(updateBubble);
+        }
+
+        updateBubble();
+    }
+
 
     const input = document.getElementById('chat-input');
     const sendBtn = document.getElementById('send-btn');
@@ -596,11 +646,16 @@ export async function startGame(user) {
         }
     });
 
-    function sendMessage() {
+    async function sendMessage() {
         const text = input.value.trim();
         if (!text) return;
-        showBubble(text);
+
         input.value = '';
+
+        await supabase.from('messages').insert({
+            user_id: user.id,
+            text,
+        });
     }
 
     sendBtn.onclick = sendMessage;

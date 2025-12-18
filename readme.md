@@ -6,6 +6,8 @@
 
 TO DO:
     better state management
+    env vars better
+    refactor code
 
 BIG TO DO:
     player customization

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 
 <head>
     <meta charset="UTF-8" />
@@ -107,6 +108,42 @@
 </head>
 
 <body>
+    <div id="auth-screen" style="
+  position: fixed;
+  inset: 0;
+  background: linear-gradient(#87ceeb, #ffffff);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+">
+  <div style="
+    background: white;
+    padding: 30px;
+    border-radius: 12px;
+    width: 300px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+  ">
+    <h2 style="margin-top:0;">🐧 Club Penguin Mini</h2>
+
+    <input id="email" placeholder="Email"
+      style="width:100%;margin-bottom:10px;padding:8px;" />
+
+    <input id="password" type="password" placeholder="Password"
+      style="width:100%;margin-bottom:10px;padding:8px;" />
+
+    <button id="login-btn" style="width:100%;margin-bottom:8px;">
+      Login
+    </button>
+
+    <button id="register-btn" style="width:100%;">
+      Register
+    </button>
+
+    <p id="auth-error" style="color:red;"></p>
+  </div>
+</div>
+
     <!-- THREE.JS CANVAS IS ADDED BY JS -->
 
     <!-- CHAT BUBBLE CONTAINER -->
